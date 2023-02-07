@@ -1,57 +1,106 @@
 variant: 2
 
 Processes:
-  - name: Datacentre
-
-    formula: |
-      energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
-      energy_serving = datavolume_served_origin * energy_intensity_serving
-      energy_storage = datavolume_origin * energy_intensity_storage
-      energy = energy_encoding + energy_storage + energy_serving
+  - name: Origin Datacentre
+    metadata:
+      - description: |
+          energy_meta = analytics, recommendation
+          
+          general formula:
+                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+                  energy_Tx = datavolume_served_origin * energy_intensity_Tx
+                  energy_storage = datavolume_origin * energy_intensity_storage
+                  energy = energy_encoding + energy_storage + energy_Tx + energy_meta
+                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+                  $$
+                    E^{ODC} = E_{encoding}^{ODC} + E_{storage}^{ODC} + E_{Tx}^{ODC} + E_{meta}^{ODC} 
+                  $$
+    formula: |      
+      energy_serving = datavolume_Rx_CDN * I_Tx;      
+      energy = energy_serving
               
     link_to: [ ]
 
   - name: Content Delivery Network
+    # https://openconnect.netflix.com/en_gb/appliances/
+#    assume mix of OC servers, calculate Tx intensity, scale with bandwidth, neglect storage energy
 
     formula: |            
-      energy_serving = datavolume_served_CDN * energy_intensity_streaming;
-      energy = energy_serving;       
-      
+      datavolume_Rx_CDN = cachemiss_rate * datavolume_Tx_CDN  
+      energy_CDN_Rx = datavolume_Rx_CDN * I_Tx;
+      energy_CDN_Tx = datavolume_Tx_CDN * I_Tx;
+      energy_CDN_storage = datavolume_Rx_CDN * I_storage;
+          
+      energy = energy_CDN_Rx + energy_CDN_Tx + energy_CDN_storage;               
 
     link_to: [ ]
 
   - name: Core Network
 
     formula:
-        energy = energy_intensity_core_fixed_BB * data_volume_by_country;
+        energy = P_Core_per_sub * viewing_time + I_Core * datavolume_Tx_CDN;
+
+    tableVariables:
+      - value: P_Core_per_sub
+      - value: I_Core
+
+    importVariables:
+      - value: datavolume_Tx_CDN
+      - value: viewing_time
+    exportVariables:
+      - value: datavolume_Tx_CDN
+      - value: viewing_time
 
     link_to:
       - Datacentre
 
   - name: Access Network
     formula:
-      energy = baseline_fixed_power * run_time_all_videos;
+      energy = P_Acc_per_sub * viewing_time + I_Acc * datavolume_Tx_CDN;
+    tableVariables:
+      - value: P_Acc_per_sub
+      - value: I_Acc
+    importVariables:
+      - value: datavolume_Tx_CDN
+      - value: viewing_time
+    exportVariables:
+      - value: datavolume_Tx_CDN
+      - value: viewing_time
 
     link_to:
-      - Wired Network
+      - Core Network
 
   - name: Laptop
-    formula: |              
-      energy = energy_decoding + energy_Rx
+    formula: |
+#      calculate average bandwidth and pass up to OpenConnect CDNs
+
+      viewing_time = monthly_audience * daily_viewing_time * days_per_month;
+      datavolume_Tx_CDN = viewing_time * bitrate;
+      energy_decoding = viewing_time * power_decoding;
+      energy_Rx = viewing_time * power_Tx;
+      energy = energy_decoding + energy_Rx;
+    tableVariables:
+      - value: monthly_audience
+      - value: daily_viewing_time
+      - value: bitrate
+
+    exportVariables:
+      - value: datavolume_Tx_CDN
+      - value: viewing_time
     link_to:
-      - Fixed BB
+      - Access Network
 
 Metadata:
   # about
   model_name: ICIP_2023_I
   model_version: 0.0.1
   description: simple model of whole-systems UG video content energy consumption, to compare alternative codecs
-  table_file_name: ICIP_2023.xlsx
-  start_date: 2020-06-01
-  end_date: 2020-08-01
+  table_file_name: short_term_model.xlsx
+  start_date: 2020-02-01
+  end_date: 2020-04-01
 
   # group-level
-  with_group: true
+  with_group: false
   group_vars:
     - decoding_energy
     - encoding_energy
@@ -73,14 +122,15 @@ Metadata:
 
 Analysis:
   scenarios:
-    - n_2
-    - n_3
-    - n_10
-    - n_100
-    - n_1000
-    - n_10000
-    - n_100000
-    - n_1000000
+    - default
+#    - n_2
+#    - n_3
+#    - n_10
+#    - n_100
+#    - n_1000
+#    - n_10000
+#    - n_100000
+#    - n_1000000
     
   result_variables:
     - energy
@@ -98,7 +148,7 @@ Analysis:
 Constants:
   # ref_duration is a month
   # days per month assumes average 365.25 days per year (allows for leap year)
-  - name: ref_duration_in_days
+  - name: days_per_month
     value: (365.25/12)
   - name: days_per_year
     value: 365.25
