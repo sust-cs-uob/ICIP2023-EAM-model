@@ -1,0 +1,106 @@
+variant: 2
+
+Processes:
+  - name: Datacentre
+
+    formula: |
+      energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+      energy_serving = datavolume_served_origin * energy_intensity_serving
+      energy_storage = datavolume_origin * energy_intensity_storage
+      energy = energy_encoding + energy_storage + energy_serving
+              
+    link_to: [ ]
+
+  - name: Content Delivery Network
+
+    formula: |            
+      energy_serving = datavolume_served_CDN * energy_intensity_streaming;
+      energy = energy_serving;       
+      
+
+    link_to: [ ]
+
+  - name: Core Network
+
+    formula:
+        energy = energy_intensity_core_fixed_BB * data_volume_by_country;
+
+    link_to:
+      - Datacentre
+
+  - name: Access Network
+    formula:
+      energy = baseline_fixed_power * run_time_all_videos;
+
+    link_to:
+      - Wired Network
+
+  - name: Laptop
+    formula: |              
+      energy = energy_decoding + energy_Rx
+    link_to:
+      - Fixed BB
+
+Metadata:
+  # about
+  model_name: ICIP_2023_I
+  model_version: 0.0.1
+  description: simple model of whole-systems UG video content energy consumption, to compare alternative codecs
+  table_file_name: ICIP_2023.xlsx
+  start_date: 2020-06-01
+  end_date: 2020-08-01
+
+  # group-level
+  with_group: true
+  group_vars:
+    - decoding_energy
+    - encoding_energy
+    - file_size
+
+  groupings_include: groupings.yml
+
+  # sampling
+  sample_size: 1
+  sample_mean: true
+
+  #analysis
+  analysis_configs:
+    - name: ci
+      process_tree: { }
+#      standard_plots:
+#        - process_tree
+  individual_process_graphs_variable: energy
+
+Analysis:
+  scenarios:
+    - n_2
+    - n_3
+    - n_10
+    - n_100
+    - n_1000
+    - n_10000
+    - n_100000
+    - n_1000000
+    
+  result_variables:
+    - energy
+#    - carbon
+  numerical:
+    # this generates the sheets in results_default_[] and the result_data_[] xlsx files
+    - energy
+#    - carbon
+  units:
+    - endswith: energy
+      to_unit: kWh
+    - __eq__: carbon
+      to_unit: kg
+
+Constants:
+  # ref_duration is a month
+  # days per month assumes average 365.25 days per year (allows for leap year)
+  - name: ref_duration_in_days
+    value: (365.25/12)
+  - name: days_per_year
+    value: 365.25
+  - name: seconds_per_day
+    value: 86400 seconds
