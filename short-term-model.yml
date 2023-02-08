@@ -70,9 +70,9 @@ Processes:
     link_to:
       - Core Network
 
+#  @todo:    calculate average bandwidth and pass up to OpenConnect CDNs
   - name: Laptop
     formula: |
-#      calculate average bandwidth and pass up to OpenConnect CDNs
 
       viewing_time = monthly_audience * daily_viewing_time * days_per_month;
       datavolume_Tx_CDN = viewing_time * bitrate;
