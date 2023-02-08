@@ -17,8 +17,11 @@ Processes:
                   $$
     formula: |      
       energy_serving = datavolume_Rx_CDN * I_Tx;      
-      energy = energy_serving
-              
+      energy = energy_serving;
+    tableVariables:
+      - value: I_Tx
+    importVariables:
+      - value: datavolume_Rx_CDN
     link_to: [ ]
 
   - name: Content Delivery Network
@@ -26,14 +29,22 @@ Processes:
 #    assume mix of OC servers, calculate Tx intensity, scale with bandwidth, neglect storage energy
 
     formula: |            
-      datavolume_Rx_CDN = cachemiss_rate * datavolume_Tx_CDN  
+      datavolume_Rx_CDN = cachemiss_rate * datavolume_Tx_CDN;  
       energy_CDN_Rx = datavolume_Rx_CDN * I_Tx;
       energy_CDN_Tx = datavolume_Tx_CDN * I_Tx;
       energy_CDN_storage = datavolume_Rx_CDN * I_storage;
           
       energy = energy_CDN_Rx + energy_CDN_Tx + energy_CDN_storage;               
-
-    link_to: [ ]
+    tableVariables:
+      - value: cachemiss_rate
+      - value: I_Tx
+      - value: I_storage
+    importVariables:
+      - value: datavolume_Tx_CDN
+    exportVariables:
+      - value: datavolume_Rx_CDN
+    link_to:
+      - Origin Datacentre
 
   - name: Core Network
 
@@ -52,7 +63,7 @@ Processes:
       - value: viewing_time
 
     link_to:
-      - Datacentre
+      - Content Delivery Network
 
   - name: Access Network
     formula:
@@ -74,7 +85,7 @@ Processes:
   - name: Laptop
     formula: |
 
-      viewing_time = monthly_audience * daily_viewing_time * days_per_month;
+      viewing_time = monthly_audience * daily_viewing_time * (365.25/12);
       datavolume_Tx_CDN = viewing_time * bitrate;
       energy_decoding = viewing_time * power_decoding;
       energy_Rx = viewing_time * power_Tx;
@@ -83,6 +94,8 @@ Processes:
       - value: monthly_audience
       - value: daily_viewing_time
       - value: bitrate
+      - value: power_decoding
+      - value: power_Tx
 
     exportVariables:
       - value: datavolume_Tx_CDN
