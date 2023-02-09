@@ -2,19 +2,20 @@ variant: 2
 
 Processes:
   - name: Origin Datacentre
-    metadata:
-      - description: |
-          energy_meta = analytics, recommendation
-          
-          general formula:
-                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
-                  energy_Tx = datavolume_served_origin * energy_intensity_Tx
-                  energy_storage = datavolume_origin * energy_intensity_storage
-                  energy = energy_encoding + energy_storage + energy_Tx + energy_meta
-                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
-                  $$
-                    E^{ODC} = E_{encoding}^{ODC} + E_{storage}^{ODC} + E_{Tx}^{ODC} + E_{meta}^{ODC} 
-                  $$
+
+#    metadata:
+#      - description: |
+#          energy_meta = analytics, recommendation
+#
+#          general formula:
+#                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+#                  energy_Tx = datavolume_served_origin * energy_intensity_Tx
+#                  energy_storage = datavolume_origin * energy_intensity_storage
+#                  energy = energy_encoding + energy_storage + energy_Tx + energy_meta
+#                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+#                  $$
+#                    E^{ODC} = E_{encoding}^{ODC} + E_{storage}^{ODC} + E_{Tx}^{ODC} + E_{meta}^{ODC}
+#                  $$
     formula: |      
       energy_serving = datavolume_Rx_CDN * I_Tx;      
       energy = energy_serving;
@@ -28,17 +29,17 @@ Processes:
     # https://openconnect.netflix.com/en_gb/appliances/
 #    assume mix of OC servers, calculate Tx intensity, scale with bandwidth, neglect storage energy
 
+#      energy_CDN_storage = datavolume_Rx_CDN * I_storage;
     formula: |            
       datavolume_Rx_CDN = cachemiss_rate * datavolume_Tx_CDN;  
       energy_CDN_Rx = datavolume_Rx_CDN * I_Tx;
       energy_CDN_Tx = datavolume_Tx_CDN * I_Tx;
-      energy_CDN_storage = datavolume_Rx_CDN * I_storage;
           
-      energy = energy_CDN_Rx + energy_CDN_Tx + energy_CDN_storage;               
+      energy = energy_CDN_Rx + energy_CDN_Tx;
     tableVariables:
       - value: cachemiss_rate
       - value: I_Tx
-      - value: I_storage
+#      - value: I_storage
     importVariables:
       - value: datavolume_Tx_CDN
     exportVariables:
@@ -49,11 +50,11 @@ Processes:
   - name: Core Network
 
     formula:
-        energy = P_Core_per_sub * viewing_time + I_Core * datavolume_Tx_CDN;
+        energy = I_Core * datavolume_Tx_CDN;
 
     tableVariables:
-      - value: P_Core_per_sub
       - value: I_Core
+#      - value: P_Core_per_sub
 
     importVariables:
       - value: datavolume_Tx_CDN
@@ -67,10 +68,10 @@ Processes:
 
   - name: Access Network
     formula:
-      energy = P_Acc_per_sub * viewing_time + I_Acc * datavolume_Tx_CDN;
+      energy = I_Acc * datavolume_Tx_CDN;
     tableVariables:
-      - value: P_Acc_per_sub
       - value: I_Acc
+#      - value: P_Acc_per_sub
     importVariables:
       - value: datavolume_Tx_CDN
       - value: viewing_time
@@ -85,17 +86,17 @@ Processes:
   - name: Laptop
     formula: |
 
-      viewing_time = monthly_audience * daily_viewing_time * (365.25/12);
+      viewing_time = daily_audience * daily_viewing_time * (365.25/12);
       datavolume_Tx_CDN = viewing_time * bitrate;
       energy_decoding = viewing_time * power_decoding;
-      energy_Rx = viewing_time * power_Tx;
-      energy = energy_decoding + energy_Rx;
+      energy = energy_decoding;
+#      energy_Rx = viewing_time * power_Tx;
     tableVariables:
-      - value: monthly_audience
+      - value: daily_audience
       - value: daily_viewing_time
       - value: bitrate
       - value: power_decoding
-      - value: power_Tx
+#      - value: power_Tx
 
     exportVariables:
       - value: datavolume_Tx_CDN
@@ -109,8 +110,8 @@ Metadata:
   model_version: 0.0.1
   description: simple model of whole-systems UG video content energy consumption, to compare alternative codecs
   table_file_name: short_term_model.xlsx
-  start_date: 2020-02-01
-  end_date: 2020-04-01
+  start_date: 2020-03-01
+  end_date: 2020-03-01
 
   # group-level
   with_group: false
@@ -128,7 +129,7 @@ Metadata:
   #analysis
   analysis_configs:
     - name: ci
-      process_tree: { }
+#      process_tree: { }
 #      standard_plots:
 #        - process_tree
   individual_process_graphs_variable: energy
@@ -136,14 +137,8 @@ Metadata:
 Analysis:
   scenarios:
     - default
-#    - n_2
-#    - n_3
-#    - n_10
-#    - n_100
-#    - n_1000
-#    - n_10000
-#    - n_100000
-#    - n_1000000
+    - s720
+
     
   result_variables:
     - energy
