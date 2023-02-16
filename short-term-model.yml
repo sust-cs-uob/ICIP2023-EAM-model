@@ -19,10 +19,11 @@ Processes:
     formula: |      
       energy_serving = datavolume_Rx_CDN * I_Tx;      
       energy = energy_serving;
-      carbon = energy * marginal_carbon_intensity;
+      
+      carbon = energy * carbon_intensity;
     tableVariables:
       - value: I_Tx
-      - value: marginal_carbon_intensity
+      - value: carbon_intensity
     importVariables:
       - value: datavolume_Rx_CDN
     link_to: [ ]
@@ -37,11 +38,11 @@ Processes:
       energy_CDN_Rx = datavolume_Rx_CDN * I_Tx;
       energy_CDN_Tx = datavolume_Tx_CDN * I_Tx;          
       energy = energy_CDN_Rx + energy_CDN_Tx;
-      carbon = energy * marginal_carbon_intensity;
+      carbon = energy * carbon_intensity;
     tableVariables:
       - value: cachemiss_rate
       - value: I_Tx
-      - value: marginal_carbon_intensity
+      - value: carbon_intensity
 #      - value: I_storage
     importVariables:
       - value: datavolume_Tx_CDN
@@ -54,10 +55,10 @@ Processes:
 
     formula:
         energy = I_Core * datavolume_Tx_CDN;
-        carbon = energy * marginal_carbon_intensity;
+        carbon = energy * carbon_intensity;
     tableVariables:
       - value: I_Core
-      - value: marginal_carbon_intensity
+      - value: carbon_intensity
 #      - value: P_Core_per_sub
     importVariables:
       - value: datavolume_Tx_CDN
@@ -72,10 +73,10 @@ Processes:
   - name: Access Network
     formula:
       energy = I_Acc * datavolume_Tx_CDN;
-      carbon = energy * marginal_carbon_intensity;
+      carbon = energy * carbon_intensity;
     tableVariables:
       - value: I_Acc
-      - value: marginal_carbon_intensity
+      - value: carbon_intensity
 #      - value: P_Acc_per_sub
     importVariables:
       - value: datavolume_Tx_CDN
@@ -91,18 +92,18 @@ Processes:
   - name: Laptop
     formula: |
 
-      viewing_time = daily_audience * daily_viewing_time * (365.25/12);
+      viewing_time = daily_audience * viewing_time * (365.25/12);
       datavolume_Tx_CDN = viewing_time * bitrate;
       energy_decoding = viewing_time * power_decoding;
       energy = energy_decoding;
-      carbon = energy * marginal_carbon_intensity;
+      carbon = energy * carbon_intensity;
 #      energy_Rx = viewing_time * power_Tx;
     tableVariables:
       - value: daily_audience
-      - value: daily_viewing_time
+      - value: viewing_time
       - value: bitrate
       - value: power_decoding
-      - value: marginal_carbon_intensity
+      - value: carbon_intensity
 #      - value: power_Tx
 
     exportVariables:
@@ -121,17 +122,16 @@ Metadata:
   end_date: 2020-03-01
 
   # group-level
-  with_group: false
+  with_group: true
   group_vars:
-    - decoding_energy
-    - encoding_energy
-    - file_size
+    - viewing_time    
+    - carbon_intensity
 
   groupings_include: groupings.yml
 
   # sampling
-  sample_size: 1
-  sample_mean: true
+  sample_size: 1000
+  sample_mean: false
 
   #analysis
   analysis_configs:
