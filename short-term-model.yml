@@ -117,7 +117,7 @@ Metadata:
   model_name: ICIP_2023_I
   model_version: 0.0.1
   description: simple model of whole-systems UG video content energy consumption, to compare alternative codecs
-  table_file_name: short_term_model.xlsx
+  table_file_name: ../ICIP2023-EAM-model/short_term_model.xlsx
   start_date: 2020-03-01
   end_date: 2020-03-01
 
@@ -127,7 +127,7 @@ Metadata:
     - viewing_time    
     - carbon_intensity
 
-  groupings_include: groupings.yml
+  groupings_include: ../ICIP2023-EAM-model/groupings.yml
 
   # sampling
   sample_size: 1000
