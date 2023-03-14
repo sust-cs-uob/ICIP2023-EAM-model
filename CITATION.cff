@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: ICIP2023-EAM-model
+abstract: This repository contains the code and data for the Energy Aware Modeling (EAM) framework presented in the paper "Help, I Shrunk My Savings! Assessing the Carbon Reduction Potential for Video Streaming from Short-Term Coding Changes" by Daniel Schien.
+authors:
+  - name: Daniel Schien
+    email: Daniel.Schien@bristol.ac.uk
+    affiliation: University of Bristol
+version: 1.0
+date-released: 2023-03-14
+repository-code: https://github.com/sust-cs-uob/ICIP2023-EAM-model

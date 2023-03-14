@@ -3,37 +3,37 @@ variant: 2
 Processes:
   - name: Origin Datacentre
 
-#    metadata:
-#      - description: |
-#          energy_meta = analytics, recommendation
-#
-#          general formula:
-#                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
-#                  energy_Tx = datavolume_served_origin * energy_intensity_Tx
-#                  energy_storage = datavolume_origin * energy_intensity_storage
-#                  energy = energy_encoding + energy_storage + energy_Tx + energy_meta
-#                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
-#                  $$
-#                    E^{ODC} = E_{encoding}^{ODC} + E_{storage}^{ODC} + E_{Tx}^{ODC} + E_{meta}^{ODC}
-#                  $$
-    formula: |      
+    #    metadata:
+    #      - description: |
+    #          energy_meta = analytics, recommendation
+    #
+    #          general formula:
+    #                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+    #                  energy_Tx = datavolume_served_origin * energy_intensity_Tx
+    #                  energy_storage = datavolume_origin * energy_intensity_storage
+    #                  energy = energy_encoding + energy_storage + energy_Tx + energy_meta
+    #                  energy_encoding = sum { i in (titles x codecs x resolutions x quality points) } encoding_energy_i
+    #                  $$
+    #                    E^{ODC} = E_{encoding}^{ODC} + E_{storage}^{ODC} + E_{Tx}^{ODC} + E_{meta}^{ODC}
+    #                  $$
+    formula: |
       energy_serving = datavolume_Rx_CDN * I_Tx;      
       energy = energy_serving;
-      
+
       carbon = energy * carbon_intensity;
     tableVariables:
       - value: I_Tx
       - value: carbon_intensity
     importVariables:
       - value: datavolume_Rx_CDN
-    link_to: [ ]
+    link_to: []
 
   - name: Content Delivery Network
     # https://openconnect.netflix.com/en_gb/appliances/
-#    assume mix of OC servers, calculate Tx intensity, scale with bandwidth, neglect storage energy
+    #    assume mix of OC servers, calculate Tx intensity, scale with bandwidth, neglect storage energy
 
-#      energy_CDN_storage = datavolume_Rx_CDN * I_storage;
-    formula: |            
+    #      energy_CDN_storage = datavolume_Rx_CDN * I_storage;
+    formula: |
       datavolume_Rx_CDN = cachemiss_rate * datavolume_Tx_CDN;  
       energy_CDN_Rx = datavolume_Rx_CDN * I_Tx;
       energy_CDN_Tx = datavolume_Tx_CDN * I_Tx;          
@@ -43,7 +43,7 @@ Processes:
       - value: cachemiss_rate
       - value: I_Tx
       - value: carbon_intensity
-#      - value: I_storage
+    #      - value: I_storage
     importVariables:
       - value: datavolume_Tx_CDN
     exportVariables:
@@ -53,13 +53,12 @@ Processes:
 
   - name: Core Network
 
-    formula:
-        energy = I_Core * datavolume_Tx_CDN;
-        carbon = energy * carbon_intensity;
+    formula: energy = I_Core * datavolume_Tx_CDN;
+      carbon = energy * carbon_intensity;
     tableVariables:
       - value: I_Core
       - value: carbon_intensity
-#      - value: P_Core_per_sub
+    #      - value: P_Core_per_sub
     importVariables:
       - value: datavolume_Tx_CDN
       - value: viewing_time
@@ -71,13 +70,12 @@ Processes:
       - Content Delivery Network
 
   - name: Access Network
-    formula:
-      energy = I_Acc * datavolume_Tx_CDN;
+    formula: energy = I_Acc * datavolume_Tx_CDN;
       carbon = energy * carbon_intensity;
     tableVariables:
       - value: I_Acc
       - value: carbon_intensity
-#      - value: P_Acc_per_sub
+    #      - value: P_Acc_per_sub
     importVariables:
       - value: datavolume_Tx_CDN
       - value: viewing_time
@@ -88,7 +86,7 @@ Processes:
     link_to:
       - Core Network
 
-#  @todo:    calculate average bandwidth and pass up to OpenConnect CDNs
+  #  @todo:    calculate average bandwidth and pass up to OpenConnect CDNs
   - name: Laptop
     formula: |
 
@@ -97,14 +95,14 @@ Processes:
       energy_decoding = viewing_time * power_decoding;
       energy = energy_decoding;
       carbon = energy * carbon_intensity;
-#      energy_Rx = viewing_time * power_Tx;
+    #      energy_Rx = viewing_time * power_Tx;
     tableVariables:
       - value: daily_audience
       - value: viewing_time
       - value: bitrate
       - value: power_decoding
       - value: carbon_intensity
-#      - value: power_Tx
+    #      - value: power_Tx
 
     exportVariables:
       - value: datavolume_Tx_CDN
@@ -117,17 +115,17 @@ Metadata:
   model_name: ICIP_2023_I
   model_version: 0.0.1
   description: simple model of whole-systems UG video content energy consumption, to compare alternative codecs
-  table_file_name: ../ICIP2023-EAM-model/short_term_model.xlsx
+  table_file_name: short_term_model.xlsx
   start_date: 2020-03-01
   end_date: 2020-03-01
 
   # group-level
   with_group: true
   group_vars:
-    - viewing_time    
+    - viewing_time
     - carbon_intensity
 
-  groupings_include: ../ICIP2023-EAM-model/groupings.yml
+  groupings_include: groupings.yml
 
   # sampling
   sample_size: 1000
@@ -136,9 +134,9 @@ Metadata:
   #analysis
   analysis_configs:
     - name: ci
-#      process_tree: { }
-#      standard_plots:
-#        - process_tree
+  #      process_tree: { }
+  #      standard_plots:
+  #        - process_tree
   individual_process_graphs_variable: energy
 
 Analysis:
